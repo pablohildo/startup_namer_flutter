@@ -4,6 +4,7 @@
 
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 
 void main() => runApp(MyApp());
 
@@ -13,9 +14,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Startup Name Generator',
       theme: ThemeData(
-        primaryColor: Colors.white,
-        primaryTextTheme: TextTheme(body1: TextStyle(color: Color(0xff515251)))
-      ),
+          primaryColor: Colors.white,
+          primaryTextTheme:
+              TextTheme(body1: TextStyle(color: Color(0xff515251)))),
       home: RandomWords(),
     );
   }
@@ -26,10 +27,38 @@ class RandomWords extends StatefulWidget {
   RandomWordsState createState() => RandomWordsState();
 }
 
+class FavoritePage extends StatelessWidget {
+  var saved;
+  var biggerFont;
+
+  FavoritePage({Key key, @required this.saved, @required this.biggerFont})
+      : super(key: key);
+  Widget build(BuildContext context) {
+    final Iterable<ListTile> tiles = saved.map((WordPair pair) {      return ListTile(
+        title: Text(
+          pair.asPascalCase,
+          style: biggerFont,
+        ),
+      );});
+    final List<Widget> divided = ListTile.divideTiles(
+      context: context,
+      tiles: tiles,
+    ).toList();
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Favorites'),
+      ),
+      body: ListView(children: divided),
+    );
+  }
+}
+
 class RandomWordsState extends State<RandomWords> {
   final _suggestions = <WordPair>[];
   final _saved = Set<WordPair>();
   final _biggerFont = const TextStyle(fontSize: 18.0);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,33 +73,11 @@ class RandomWordsState extends State<RandomWords> {
   }
 
   void _pushSaved() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (BuildContext context) {
-          final Iterable<ListTile> tiles = _saved.map(
-            (WordPair pair) {
-              return ListTile(
-                title: Text(
-                  pair.asPascalCase,
-                  style: _biggerFont,
-                ),
-              );
-            }
-          );
-          final List<Widget> divided = ListTile.divideTiles(
-            context: context,
-            tiles: tiles,
-          ).toList();
-
-          return Scaffold(
-            appBar: AppBar(
-              title: Text('Favorites'),
-            ),
-            body: ListView(children: divided),
-          );
-        }
-      )
-    );
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => FavoritePage(
+              biggerFont: _biggerFont,
+              saved: _saved,
+            )));
   }
 
   Widget _buildRow(WordPair pair) {
@@ -86,16 +93,16 @@ class RandomWordsState extends State<RandomWords> {
       ),
       onTap: () {
         setState(() {
-         if (alreadySaved) {
-          _saved.remove(pair);
-         } else {
-           _saved.add(pair);
-         }
+          if (alreadySaved) {
+            _saved.remove(pair);
+          } else {
+            _saved.add(pair);
+          }
         });
       },
     );
   }
-  
+
   Widget _buildSuggestions() {
     return ListView.builder(
       padding: const EdgeInsets.all(16.0),
